@@ -88,15 +88,26 @@ class ReportBuilder:
             for month, data in sorted(monthly.items())
         ]
 
-        ranked_hotels = sorted(hotels.items(), key=lambda item: (item[1]["amount"], item[0]))
+        ranked_hotels = sorted(
+            (
+                {
+                    "hotel_id": hotel_id,
+                    "hotel_name": data["hotel_name"],
+                    "room_nights": data["room_nights"],
+                    "total_brl": data["amount"],
+                }
+                for hotel_id, data in hotels.items()
+            ),
+            key=lambda h: (-h["total_brl"], h["hotel_id"]),
+        )
         top_hotels = [
             {
-                "hotel_id": hotel_id,
-                "hotel_name": data["hotel_name"],
-                "room_nights": data["room_nights"],
-                "total_brl": format_money(data["amount"]),
+                "hotel_id": hotel["hotel_id"],
+                "hotel_name": hotel["hotel_name"],
+                "room_nights": hotel["room_nights"],
+                "total_brl": format_money(hotel["total_brl"]),
             }
-            for hotel_id, data in ranked_hotels[: self._top_n]
+            for hotel in ranked_hotels[: self._top_n]
         ]
 
         now = self._now or datetime.now(FIXED_OFFSET)
